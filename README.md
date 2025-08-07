@@ -1,204 +1,193 @@
-# Resume Grader - Student Portal
+# Resume Grading Feedback
 
-A web application that allows students to check their resume status and submit updated resume links through a Google Sheets backend.
+A modern web application that allows students to check their resume status and submit updates through a Google Sheets backend. Built with Node.js, Express, and a beautiful dark mode UI.
 
-## Features
+## ✨ Features
 
-- ✅ Student authentication with Student Code and Auth Code
-- ✅ Display resume link, status, and feedback from Google Sheets
-- ✅ Submit new resume links when status is "Not Cleared"
-- ✅ Automatic status update to "Grading Pending" on new submission
-- ✅ Modern, responsive UI with real-time feedback
-- ✅ Google Sheets API integration
+- 🔐 **Secure Authentication**: Student Code + Authentication Code system
+- 📊 **Real-time Status**: Check resume status (Cleared/Not Cleared/Grading Pending)
+- 📝 **Detailed Feedback**: View comprehensive feedback from grading team
+- 🔄 **Resume Updates**: Submit new Google Drive links for review
+- 📱 **Mobile Responsive**: Works perfectly on all devices
+- 🌙 **Dark Mode UI**: Modern, clean interface
+- 🔗 **Google Sheets Integration**: Real-time data sync
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Node.js (v14 or higher)
+### Prerequisites
+- Node.js (v16 or higher)
 - Google Cloud Platform account
 - Google Sheets API enabled
-- A Google Service Account with Editor access to your Google Sheet
 
-## Setup Instructions
+### Installation
 
-### 1. Clone and Install Dependencies
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/resume-grading-feedback.git
+   cd resume-grading-feedback
+   ```
 
-```bash
-git clone <repository-url>
-cd ResumeGrader
-npm install
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-### 2. Google Sheets Setup
+3. **Set up environment variables**
+   ```bash
+   cp env.example .env
+   # Edit .env with your Google Sheets credentials
+   ```
 
-#### Create Google Sheet
-1. Create a new Google Sheet
-2. Name the first tab "ResumeData"
-3. Add the following headers in row 1:
-   - A1: Student Code
-   - B1: Auth Code
-   - C1: Resume Link
-   - D1: Resume Status
-   - E1: Feedback
+4. **Run the application**
+   ```bash
+   npm start
+   ```
 
-#### Sample Data Structure
-| Student Code | Auth Code | Resume Link | Resume Status | Feedback |
-|--------------|-----------|-------------|---------------|----------|
-| S001 | AUTH123 | https://drive.google.com/... | Cleared | Great work! |
-| S002 | AUTH456 | https://drive.google.com/... | Not Cleared | Please improve formatting |
+5. **Visit the application**
+   Open [http://localhost:3000](http://localhost:3000)
 
-### 3. Google Cloud Platform Setup
+## 🔧 Setup Guide
 
-#### Enable Google Sheets API
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable the Google Sheets API
-4. Go to "APIs & Services" > "Library"
-5. Search for "Google Sheets API" and enable it
+### 1. Google Sheets Setup
 
-#### Create Service Account
-1. Go to "APIs & Services" > "Credentials"
-2. Click "Create Credentials" > "Service Account"
-3. Fill in service account details
-4. Click "Create and Continue"
-5. Skip role assignment (we'll do this manually)
-6. Click "Done"
+1. **Create a Google Sheet** with this structure:
+   ```
+   Student Code | Auth Code | Resume Link | Resume Status | Feedback
+   ```
 
-#### Generate Service Account Key
-1. Click on your service account
-2. Go to "Keys" tab
-3. Click "Add Key" > "Create New Key"
-4. Choose JSON format
-5. Download the JSON file
+2. **Enable Google Sheets API** in Google Cloud Console
 
-#### Grant Sheet Access
-1. Open your Google Sheet
-2. Click "Share" button
-3. Add your service account email (found in the JSON file)
-4. Give "Editor" access
-5. Copy the Sheet ID from the URL
+3. **Create a Service Account** and download the JSON key
 
-### 4. Environment Configuration
+4. **Share your Google Sheet** with the service account email (Editor access)
 
-1. Copy `env.example` to `.env`:
-```bash
-cp env.example .env
-```
+### 2. Environment Configuration
 
-2. Edit `.env` with your configuration:
+Create a `.env` file with:
 ```env
-# Google Sheets API Configuration
-GOOGLE_SHEET_ID=your_sheet_id_here
-GOOGLE_SERVICE_ACCOUNT_EMAIL=your_service_account@project.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END PRIVATE KEY-----\n"
-
-# Server Configuration
+GOOGLE_SHEET_ID=your_google_sheet_id
+GOOGLE_SERVICE_ACCOUNT_EMAIL=your_service_account_email
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 PORT=3000
 ```
 
-**Important Notes:**
-- Replace `your_sheet_id_here` with your actual Google Sheet ID
-- Replace `your_service_account@project.iam.gserviceaccount.com` with your service account email
-- Copy the private key from your downloaded JSON file (keep the quotes and \n characters)
-
-### 5. Run the Application
+### 3. Test the Setup
 
 ```bash
-# Development mode (with auto-restart)
-npm run dev
+# Test Google Sheets connection
+node test-sheet.js
 
-# Production mode
-npm start
+# Run with mock data (for development)
+npm run dev-mock
 ```
 
-The application will be available at `http://localhost:3000`
+## 🌐 Deployment
 
-## API Endpoints
+### Quick Deployment Options
 
-### POST /api/check-status
-Check student resume status using Student Code and Auth Code.
+1. **Railway (Recommended)** - Free tier, easy setup
+2. **Render** - Free tier available
+3. **Heroku** - Reliable, paid plans
+4. **Vercel** - Great for frontend, free tier
 
-**Request Body:**
-```json
-{
-  "studentCode": "S001",
-  "authCode": "AUTH123"
-}
+### Deployment Steps
+
+1. **Push to GitHub**
+   ```bash
+   git remote add origin https://github.com/yourusername/resume-grading-feedback.git
+   git push -u origin main
+   ```
+
+2. **Deploy to your chosen platform**
+   - Follow the detailed guide in [DEPLOYMENT.md](DEPLOYMENT.md)
+   - Add environment variables to your hosting platform
+   - Deploy!
+
+3. **Your app will be live at:**
+   - Railway: `https://your-app-name.railway.app`
+   - Render: `https://your-app-name.onrender.com`
+   - Heroku: `https://your-app-name.herokuapp.com`
+
+## 📱 Usage
+
+### For Students
+
+1. **Enter Credentials**
+   - Student Code (e.g., `IITRPRAI_24081034`)
+   - Authentication Code (e.g., `123`)
+
+2. **Check Status**
+   - View current resume link
+   - See status (Cleared/Not Cleared/Grading Pending)
+   - Read detailed feedback
+
+3. **Submit Updates** (if status is "Not Cleared")
+   - Provide new Google Drive link
+   - Submit for re-grading
+   - Status changes to "Grading Pending"
+
+### For Administrators
+
+1. **Manage Google Sheet**
+   - Add new students with codes
+   - Update resume status
+   - Provide detailed feedback
+
+2. **Monitor Submissions**
+   - Check "Grading Pending" entries
+   - Review new resume links
+   - Update status and feedback
+
+## 🛠️ Development
+
+### Project Structure
+```
+resume-grading-feedback/
+├── public/                 # Frontend files
+│   ├── index.html         # Main UI
+│   └── script.js          # Frontend logic
+├── server.js              # Main server
+├── server-mock.js         # Mock server for development
+├── setup.js               # Environment setup wizard
+├── test-sheet.js          # Google Sheets test
+└── package.json           # Dependencies
 ```
 
-**Response:**
-```json
-{
-  "resumeLink": "https://drive.google.com/...",
-  "status": "Cleared",
-  "feedback": "Great work!"
-}
-```
+### Available Scripts
 
-### POST /api/update-resume
-Update resume link for a student (only when status is "Not Cleared").
-
-**Request Body:**
-```json
-{
-  "studentCode": "S001",
-  "newResumeLink": "https://drive.google.com/..."
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Resume updated successfully. Status changed to \"Grading Pending\"."
-}
-```
-
-## Usage Flow
-
-1. **Student Access**: Student visits the web application
-2. **Authentication**: Enters Student Code and Auth Code
-3. **Status Check**: System validates credentials and displays resume information
-4. **Resume Display**: Shows current resume link, status, and feedback
-5. **Update Option**: If status is "Not Cleared", student can submit new resume link
-6. **Status Update**: New submission automatically updates status to "Grading Pending"
-
-## Status Types
-
-- **Cleared**: Resume meets requirements
-- **Not Cleared**: Resume needs updates
-- **Grading Pending**: New resume submitted, awaiting review
-
-## Security Features
-
-- Authentication required for all operations
-- Google Drive link validation
-- Status-based update restrictions
-- Input sanitization and validation
-
-## Troubleshooting
-
-### Common Issues
-
-1. **"Invalid Student Code or Auth Code"**
-   - Verify the student exists in your Google Sheet
-   - Check that Student Code and Auth Code match exactly
-
-2. **"Google Sheets API Error"**
-   - Verify your service account has Editor access to the sheet
-   - Check that your environment variables are correctly set
-   - Ensure the Google Sheets API is enabled
-
-3. **"Resume can only be updated when status is 'Not Cleared'"**
-   - This is expected behavior - students can only update resumes that need changes
-
-### Debug Mode
-
-To see detailed error logs, run:
 ```bash
-DEBUG=* npm start
+npm start          # Start production server
+npm run dev        # Start development server with nodemon
+npm run mock       # Start mock server
+npm run dev-mock   # Start mock server with nodemon
+npm run setup      # Run setup wizard
+npm run fix-env    # Fix environment variables
 ```
 
-## Contributing
+### API Endpoints
+
+- `POST /api/check-status` - Check student resume status
+- `POST /api/update-resume` - Submit new resume link
+
+## 🔒 Security Features
+
+- Environment variable protection
+- Input validation and sanitization
+- CORS configuration
+- Google Sheets API authentication
+- No sensitive data in client-side code
+
+## 📊 Google Sheets Schema
+
+| Column | Purpose | Example |
+|--------|---------|---------|
+| Student Code | Unique student identifier | `IITRPRAI_24081034` |
+| Auth Code | Authentication password | `123` |
+| Resume Link | Google Drive link | `https://drive.google.com/...` |
+| Resume Status | Current status | `Cleared` / `Not Cleared` / `Grading Pending` |
+| Feedback | Detailed feedback | `Please improve formatting...` |
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -206,13 +195,28 @@ DEBUG=* npm start
 4. Test thoroughly
 5. Submit a pull request
 
-## License
+## 📄 License
 
-MIT License - see LICENSE file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🆘 Support
 
-For issues and questions:
-1. Check the troubleshooting section
-2. Review Google Sheets API documentation
-3. Create an issue in the repository 
+If you encounter any issues:
+
+1. Check the [troubleshooting guide](DEPLOYMENT.md#troubleshooting)
+2. Review application logs
+3. Test locally first
+4. Open an issue on GitHub
+
+## 🎯 Roadmap
+
+- [ ] Email notifications for status updates
+- [ ] Bulk student import
+- [ ] Advanced analytics dashboard
+- [ ] Multi-language support
+- [ ] API rate limiting
+- [ ] User management system
+
+---
+
+**Built with ❤️ for better resume grading workflows** 
