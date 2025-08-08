@@ -1,6 +1,6 @@
 {
   "name": "resume-grading-feedback",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A web application for students to check and update their resume status via Google Sheets",
   "main": "server.js",
   "scripts": {
