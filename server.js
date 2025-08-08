@@ -133,10 +133,16 @@ app.post('/api/check-status', async (req, res) => {
       return res.status(404).json({ error: 'Invalid Student Code or Auth Code' });
     }
 
+    // Show "Grading Pending" as feedback when status is "Grading Pending"
+    let displayFeedback = studentData.data.feedback;
+    if (studentData.data.status === 'Grading Pending') {
+      displayFeedback = 'Grading Pending';
+    }
+
     res.json({
       resumeLink: studentData.data.resumeLink,
       status: studentData.data.status,
-      feedback: studentData.data.feedback
+      feedback: displayFeedback
     });
 
   } catch (error) {
