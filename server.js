@@ -219,33 +219,33 @@ app.post('/api/update-resume', async (req, res) => {
     }
 
     try {
-      // Try to update Google Sheets
+      // Try to update Google Sheets - preserve existing feedback
       await sheets.spreadsheets.values.update({
         spreadsheetId: SPREADSHEET_ID,
         range: `ResumeData!C${studentData.rowIndex}:E${studentData.rowIndex}`,
         valueInputOption: 'RAW',
         resource: {
-          values: [[newResumeLink, 'Grading Pending', '']]
+          values: [[newResumeLink, 'Grading Pending', studentData.data.feedback]]
         }
       });
       
-      console.log(`Updated Google Sheets for student ${studentCode}`);
+      console.log(`Updated Google Sheets for student ${studentCode} - preserved feedback`);
     } catch (sheetsError) {
       console.error('Google Sheets update failed, updating mock data:', sheetsError.message);
       
-      // Update mock data as fallback
+      // Update mock data as fallback - preserve existing feedback
       const mockStudent = mockSheetData.find(student => student.studentCode === studentCode);
       if (mockStudent) {
         mockStudent.resumeLink = newResumeLink;
         mockStudent.status = 'Grading Pending';
-        mockStudent.feedback = '';
-        console.log(`Updated mock data for student ${studentCode}`);
+        // Keep existing feedback instead of clearing it
+        console.log(`Updated mock data for student ${studentCode} - preserved feedback`);
       }
     }
 
     res.json({ 
       success: true, 
-      message: 'Resume updated successfully. Status changed to "Grading Pending".' 
+      message: 'Resume updated successfully. Status changed to "Grading Pending". Previous feedback has been preserved.' 
     });
 
   } catch (error) {
