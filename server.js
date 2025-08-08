@@ -266,6 +266,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Resume Grader server running on port ${PORT}`);
+  console.log(`Resume Grading Feedback server running on port ${PORT}`);
   console.log(`Visit http://localhost:${PORT} to access the application`);
+  console.log(`✅ Feedback preservation enabled - original feedback will be kept in Google Sheets`);
 }); 
