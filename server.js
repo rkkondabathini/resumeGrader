@@ -34,6 +34,7 @@ const auth = new google.auth.GoogleAuth({
 
 const sheets = google.sheets({ version: 'v4', auth });
 const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
+const SHEET_TAB = (process.env.SHEET_TAB_NAME || 'ResumeData').replace(/['"]/g, '').trim() || 'ResumeData';
 
 // Mock data as fallback
 const mockSheetData = [
@@ -66,7 +67,7 @@ async function findStudentRow(studentCode, authCode) {
     // Try Google Sheets first
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: 'ResumeData!A:E', // Student Code, Auth Code, Resume Link, Status, Feedback
+      range: `${SHEET_TAB}!A:E`, // Student Code, Auth Code, Resume Link, Status, Feedback
     });
 
     const rows = response.data.values;
@@ -154,10 +155,10 @@ app.post('/api/check-status', async (req, res) => {
 // POST /api/update-resume
 app.post('/api/update-resume', async (req, res) => {
   try {
-    const { studentCode, newResumeLink } = req.body;
+    const { studentCode, authCode, newResumeLink } = req.body;
 
-    if (!studentCode || !newResumeLink) {
-      return res.status(400).json({ error: 'Student Code and new Resume Link are required' });
+    if (!studentCode || !authCode || !newResumeLink) {
+      return res.status(400).json({ error: 'Student Code, Auth Code, and new Resume Link are required' });
     }
 
     // Validate Google Drive link format
@@ -165,58 +166,11 @@ app.post('/api/update-resume', async (req, res) => {
       return res.status(400).json({ error: 'Please provide a valid Google Drive link' });
     }
 
-    // First, find the student to check their current status
-    let studentData = null;
-    
-    try {
-      // Try to find in Google Sheets
-      const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: 'ResumeData!A:E',
-      });
-      
-      const rows = response.data.values;
-      if (rows && rows.length > 0) {
-        for (let i = 1; i < rows.length; i++) {
-          const row = rows[i];
-          if (row[0] === studentCode) {
-            studentData = {
-              rowIndex: i + 1,
-              data: {
-                studentCode: row[0],
-                authCode: row[1],
-                resumeLink: row[2] || '',
-                status: row[3] || '',
-                feedback: row[4] || ''
-              }
-            };
-            break;
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Google Sheets lookup failed, checking mock data:', error.message);
-    }
-    
-    // Fallback to mock data if Google Sheets failed
+    // Find the student by BOTH studentCode and authCode (same as check-status)
+    const studentData = await findStudentRow(studentCode, authCode);
+
     if (!studentData) {
-      const mockStudent = mockSheetData.find(student => student.studentCode === studentCode);
-      if (mockStudent) {
-        studentData = {
-          rowIndex: 1,
-          data: {
-            studentCode: mockStudent.studentCode,
-            authCode: mockStudent.authCode,
-            resumeLink: mockStudent.resumeLink,
-            status: mockStudent.status,
-            feedback: mockStudent.feedback
-          }
-        };
-      }
-    }
-    
-    if (!studentData) {
-      return res.status(404).json({ error: 'Student not found' });
+      return res.status(404).json({ error: 'Invalid Student Code or Auth Code' });
     }
 
     // Check if status is "Not Cleared" (allow update only if not cleared)
@@ -224,34 +178,29 @@ app.post('/api/update-resume', async (req, res) => {
       return res.status(400).json({ error: 'Resume can only be updated when status is "Not Cleared"' });
     }
 
+    // Only update Google Sheets - no mock fallback so we don't pretend success when sheet fails
     try {
-      // Try to update Google Sheets - preserve existing feedback
       await sheets.spreadsheets.values.update({
         spreadsheetId: SPREADSHEET_ID,
-        range: `ResumeData!C${studentData.rowIndex}:E${studentData.rowIndex}`,
+        range: `${SHEET_TAB}!C${studentData.rowIndex}:E${studentData.rowIndex}`,
         valueInputOption: 'RAW',
         resource: {
           values: [[newResumeLink, 'Grading Pending', studentData.data.feedback]]
         }
       });
-      
-      console.log(`Updated Google Sheets for student ${studentCode} - preserved feedback`);
     } catch (sheetsError) {
-      console.error('Google Sheets update failed, updating mock data:', sheetsError.message);
-      
-      // Update mock data as fallback - preserve existing feedback
-      const mockStudent = mockSheetData.find(student => student.studentCode === studentCode);
-      if (mockStudent) {
-        mockStudent.resumeLink = newResumeLink;
-        mockStudent.status = 'Grading Pending';
-        // Keep existing feedback instead of clearing it
-        console.log(`Updated mock data for student ${studentCode} - preserved feedback`);
-      }
+      const msg = sheetsError.message || String(sheetsError);
+      const details = sheetsError.response?.data ? JSON.stringify(sheetsError.response.data) : '';
+      console.error('Google Sheets update failed:', msg, details);
+      return res.status(503).json({
+        error: `Could not save to the sheet. Please try again. If it keeps failing, ensure the sheet has a tab named "${SHEET_TAB}" and the service account has Editor access.`
+      });
     }
 
-    res.json({ 
-      success: true, 
-      message: 'Resume updated successfully. Status changed to "Grading Pending". Previous feedback has been preserved.' 
+    console.log(`Updated Google Sheets for student ${studentCode} - preserved feedback`);
+    res.json({
+      success: true,
+      message: 'Resume updated successfully. Status changed to "Grading Pending". Previous feedback has been preserved.'
     });
 
   } catch (error) {

@@ -1,5 +1,6 @@
 // Global variables
 let currentStudentCode = '';
+let currentAuthCode = '';
 
 // DOM elements
 const checkForm = document.getElementById('checkForm');
@@ -115,14 +116,14 @@ async function checkResumeStatus(studentCode, authCode) {
 }
 
 // Update resume link
-async function updateResumeLink(studentCode, newResumeLink) {
+async function updateResumeLink(studentCode, authCode, newResumeLink) {
     try {
         const response = await fetch('/api/update-resume', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ studentCode, newResumeLink }),
+            body: JSON.stringify({ studentCode, authCode, newResumeLink }),
         });
 
         if (!response.ok) {
@@ -148,8 +149,9 @@ checkForm.addEventListener('submit', async (e) => {
         return;
     }
     
-    // Store current student code for later use
+    // Store current student code and auth code for later use (e.g. update resume)
     currentStudentCode = studentCode;
+    currentAuthCode = authCode;
     
     // Show loading
     toggleLoading(true);
@@ -183,7 +185,7 @@ submitNewResumeBtn.addEventListener('click', async () => {
         return;
     }
     
-    if (!currentStudentCode) {
+    if (!currentStudentCode || !currentAuthCode) {
         showAlert('Please check your resume status first');
         return;
     }
@@ -193,7 +195,7 @@ submitNewResumeBtn.addEventListener('click', async () => {
     alert.style.display = 'none';
     
     try {
-        const data = await updateResumeLink(currentStudentCode, newResumeLink);
+        const data = await updateResumeLink(currentStudentCode, currentAuthCode, newResumeLink);
         showAlert(data.message, 'success');
         
         // Clear the new resume link input
