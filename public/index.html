@@ -52,6 +52,46 @@
             font-size: 0.9rem;
         }
 
+        .helpdesk-banner {
+            background: rgba(102, 126, 234, 0.12);
+            border: 1px solid rgba(102, 126, 234, 0.4);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .helpdesk-banner h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #c7d2fe;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .helpdesk-banner p,
+        .helpdesk-banner li {
+            color: #d1d5db;
+            font-size: 0.9rem;
+        }
+
+        .helpdesk-banner ul {
+            list-style: none;
+            margin: 0.5rem 0 0.75rem;
+            padding: 0;
+        }
+
+        .helpdesk-banner a {
+            color: #93c5fd;
+            word-break: break-all;
+            text-decoration: none;
+        }
+
+        .helpdesk-banner a:hover {
+            text-decoration: underline;
+        }
+
         /* Form Section */
         .form-section {
             margin-bottom: 2rem;
@@ -343,6 +383,23 @@
             <p>Check your resume status and submit updates</p>
         </div>
 
+        <div id="helpdeskBanner" class="helpdesk-banner">
+            <h3><i class="fas fa-headset"></i> Helpdesk Assistance</h3>
+            <p>Kindly join the helpdesk in case of any assistance required as per the below slots.</p>
+            <p>Helpdesk details (Monday to Friday, only on working days):</p>
+            <ul>
+                <li>Slot 1: 12 - 1 PM</li>
+                <li>Slot 2: 4 - 5 PM</li>
+                <li>Slot 3: 7 - 8 PM</li>
+            </ul>
+            <p>
+                Meeting Link:
+                <a href="https://us06web.zoom.us/j/86336411337" target="_blank" rel="noopener noreferrer">
+                    https://us06web.zoom.us/j/86336411337
+                </a>
+            </p>
+        </div>
+
         <!-- Form Section -->
         <div class="form-section">
             <div id="alert" class="alert"></div>
@@ -374,6 +431,29 @@
 
         <!-- Results Section -->
         <div id="resultSection" class="results-section">
+            <div id="updateSection" class="update-section">
+                <div class="update-header">
+                    <i class="fas fa-upload"></i>
+                    Submit New Resume
+                </div>
+                <p>
+                    Your resume needs updates. Please provide a new Google Drive link with the improvements mentioned in the feedback above.
+                </p>
+                
+                <div class="update-form">
+                    <div class="form-group">
+                        <label for="newResumeLink">New Resume Link</label>
+                        <input type="url" id="newResumeLink" name="newResumeLink" 
+                               placeholder="https://drive.google.com/..." required>
+                    </div>
+
+                    <button type="button" id="submitNewResume" class="btn btn-success">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit
+                    </button>
+                </div>
+            </div>
+
             <div class="results-grid">
                 <div class="result-item">
                     <div class="result-label">Resume Link</div>
@@ -395,29 +475,6 @@
                 <div class="result-item">
                     <div class="result-label">Feedback</div>
                     <div class="result-value" id="feedback"></div>
-                </div>
-            </div>
-
-            <div id="updateSection" class="update-section">
-                <div class="update-header">
-                    <i class="fas fa-upload"></i>
-                    Submit New Resume
-                </div>
-                <p>
-                    Your resume needs updates. Please provide a new Google Drive link with the improvements mentioned in the feedback above.
-                </p>
-                
-                <div class="update-form">
-                    <div class="form-group">
-                        <label for="newResumeLink">New Resume Link</label>
-                        <input type="url" id="newResumeLink" name="newResumeLink" 
-                               placeholder="https://drive.google.com/..." required>
-                    </div>
-
-                    <button type="button" id="submitNewResume" class="btn btn-success">
-                        <i class="fas fa-paper-plane"></i>
-                        Submit
-                    </button>
                 </div>
             </div>
         </div>

@@ -11,6 +11,7 @@ const alert = document.getElementById('alert');
 const resultSection = document.getElementById('resultSection');
 const updateSection = document.getElementById('updateSection');
 const emptyState = document.getElementById('emptyState');
+const helpdeskBanner = document.getElementById('helpdeskBanner');
 
 // Resume elements
 const resumeLink = document.getElementById('resumeLink');
@@ -56,6 +57,13 @@ function getStatusIcon(status) {
     }
 }
 
+function shouldShowHelpdesk(status) {
+    const normalizedStatus = (status || '').toLowerCase().trim();
+    return normalizedStatus === 'not cleared' ||
+           normalizedStatus === 'grading pending' ||
+           normalizedStatus === 'grading in progress';
+}
+
 // Display resume information
 function displayResumeInfo(data) {
     // Set resume link
@@ -72,6 +80,7 @@ function displayResumeInfo(data) {
     // Show sections
     resultSection.style.display = 'block';
     emptyState.style.display = 'none';
+    helpdeskBanner.style.display = shouldShowHelpdesk(data.status) ? 'block' : 'none';
     
     // Show update section if status is "Not Cleared"
     if (data.status.toLowerCase() === 'not cleared') {
@@ -91,6 +100,7 @@ function showEmptyState() {
     resultSection.style.display = 'none';
     updateSection.style.display = 'none';
     emptyState.style.display = 'block';
+    helpdeskBanner.style.display = 'none';
 }
 
 // Check resume status
@@ -207,6 +217,7 @@ submitNewResumeBtn.addEventListener('click', async () => {
         // Update the status badge to show "Grading Pending"
         statusBadge.innerHTML = '<i class="fas fa-clock"></i> Grading Pending';
         statusBadge.className = 'status-badge status-pending';
+        helpdeskBanner.style.display = 'block';
         
     } catch (error) {
         showAlert(error.message);

@@ -22,12 +22,28 @@ if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_PRIVATE_KEY
   process.exit(1);
 }
 
+// Normalize private key: restore newlines if they were stripped (common on Render/Heroku)
+function normalizePrivateKey(key) {
+  if (!key || typeof key !== 'string') return key;
+  let k = key.replace(/\\n/g, '\n');
+  if (k.includes('\n')) return k;
+  const begin = '-----BEGIN PRIVATE KEY-----';
+  const end = '-----END PRIVATE KEY-----';
+  const beginIdx = k.indexOf(begin);
+  const endIdx = k.indexOf(end);
+  if (beginIdx === -1 || endIdx === -1) return k;
+  const middle = k.slice(beginIdx + begin.length, endIdx).replace(/\s/g, '');
+  const lines = [];
+  for (let i = 0; i < middle.length; i += 64) lines.push(middle.slice(i, i + 64));
+  return begin + '\n' + lines.join('\n') + '\n' + end + '\n';
+}
+
 // Google Sheets API setup with service account
 const auth = new google.auth.GoogleAuth({
   keyFile: null,
   credentials: {
     client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    private_key: normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY),
   },
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
@@ -189,12 +205,24 @@ app.post('/api/update-resume', async (req, res) => {
         }
       });
     } catch (sheetsError) {
+      const statusCode = sheetsError.code || sheetsError.response?.status;
       const msg = sheetsError.message || String(sheetsError);
-      const details = sheetsError.response?.data ? JSON.stringify(sheetsError.response.data) : '';
-      console.error('Google Sheets update failed:', msg, details);
-      return res.status(503).json({
-        error: `Could not save to the sheet. Please try again. If it keeps failing, ensure the sheet has a tab named "${SHEET_TAB}" and the service account has Editor access.`
-      });
+      const body = sheetsError.response?.data;
+      const bodyMessage = body?.error?.message || body?.message || '';
+      console.error('Google Sheets update failed:', { statusCode, message: msg, body });
+      let userMessage = 'Could not save to the sheet. ';
+      if (statusCode === 401 || (body && (body.error === 'invalid_grant' || body.error_description))) {
+        userMessage += 'Authentication failed: check that GOOGLE_PRIVATE_KEY on Render has correct newlines (use \\n in one line or paste with newlines).';
+      } else if (statusCode === 403) {
+        userMessage += 'Permission denied: confirm the service account has Editor access to the sheet.';
+      } else if (statusCode === 404) {
+        userMessage += `Sheet or range not found: confirm GOOGLE_SHEET_ID and tab "${SHEET_TAB}" are correct.`;
+      } else if (statusCode === 400 && (bodyMessage.includes('protected') || bodyMessage.includes('protection'))) {
+        userMessage += 'The sheet has protected cells. The owner must remove protection or add the service account (see Render env GOOGLE_SERVICE_ACCOUNT_EMAIL) as an editor of the protected range.';
+      } else {
+        userMessage += `Please try again. If it keeps failing, ensure the sheet has a tab named "${SHEET_TAB}" and the service account has Editor access.`;
+      }
+      return res.status(503).json({ error: userMessage });
     }
 
     console.log(`Updated Google Sheets for student ${studentCode} - preserved feedback`);
